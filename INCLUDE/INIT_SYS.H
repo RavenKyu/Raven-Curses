@@ -1,0 +1,2 @@
+#define MAX_WIDTH_SCREEN	85
+#define MAX_HEIGHT_SCREEN	25
