@@ -1,0 +1,19 @@
+#define TEXT_BLACK	0x00
+#define TEXT_BLUE	0x01
+#define TEXT_GREEN	0x02
+#define TEXT_SKY	0x03
+#define TEXT_RED	0x04
+#define TEXT_PURPLE	0x05
+#define TEXT_BROWN	0x06
+#define TEXT_GRAY	0x07
+#define	TEXT_bBLACK	0x08
+#define TEXT_bBLUE	0x09
+#define TEXT_bGREEN	0x10
+#define TEXT_bSKY	0x11
+#define TEXT_bRED	0x12
+#define TEXT_bPURPLE	0x13
+#define	TEXT_YELLOW	0x14
+#define TEXT_WHITE	0x15
+
+#define BG_BLACK	0x10
+#define BG_BLUE	0xA0
