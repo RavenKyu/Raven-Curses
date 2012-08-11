@@ -1,64 +1,135 @@
 #include "include/headers.h"
 
+#define DEBUG 1                 // if the value is one, debugging mode is set.
+
+/* Definition STRUCTURES for Raven Curses. */
+typedef struct window
+{
+	int window_handle;
+	int priority;
+	int width;
+	int height;
+	int y;
+	int x;
+	char attribute;
+	unsigned char far *next_word;
+} DIALOG_BOX;
+
+typedef struct a_word
+{
+	char a_word;
+	char attribute;
+	struct a_word far *previous;
+	struct a_word far *next;
+} A_WORD;
+
+/* The end of definition of STRUCTURES for Raven Curses */
+
+/* Definition of the Raven Curses */
+/* Definition of low level function ----------------------------------------------------------------- */
+
 /* #1 Low level functions for putting a text on screen  */
-void put_a_character(int y, int x, char character, int attribute);
-void put_a_string(int y, int x, char *string, int attribute);
+void put_a_character(int y, int x, char character, int attribute); // 문자 인자로 받아서 화면에 출력한다.
+void put_a_string(int y, int x, char *string, int attribute);      // 문자열을 인자로 받아서 출력한다.
 
 /* #2 Low level functions for making a box  */
 void make_a_filled_box(int y, int x, int width, int height, int attribute, char option_flags);
 void make_a_shadow(int y, int x, int width, int height, int attribute);
 void draw_a_quadrangle(int y, int x, int width, int height, int attribute, char option_flags);
 
-
 /* #3 Low level functions for filling the background with a extended ASCII */
 void fill_background(char tile, int attribute);
 
-/* #4 Low level functions for getting the point where you want */
-int get_the_center_point(int width_of_base, int length_of_object)
-{
-	return ((width_of_base - length_of_object) / 2);
-}
+/* #4 Low level functions for system */
+int get_the_center_point(int width_of_base, int length_of_object);
 
+void VGA_inverse_attrib(unsigned char far *attrib);
+void VGA_inverse_bar(int y, int x, int length);
+
+void VGA_inverse_attrib_shadow(unsigned char far *attrib);
+void VGA_inverse_shadow(int y, int x, int length);
+
+/* Keyboard Proccessing. */
+void get_keyboard_input(char *high_level, char *low_level); // 키보드의 입력을 받는다.
+void move_cursor(int page, int y, int x); // 커서를 인자를 받아서 이동 시킨다.
+
+
+
+/* The end of definition of low level functions ------------------------------------------------------ */
+
+/* Definition of high level function ----------------------------------------------------------------- */
 
 /* #H1 High level functions for making a "Dialog Box"  */
 void make_a_dialog_box(int y, int x, int width, int height,
-	int attribute, char option_flags,
-	char *tilte, char dialog_flags);
+					   int attribute, char option_flags,
+					   char *tilte, char dialog_flags);
+
+/* #H2 High level functions for making a "text editor" */
+DIALOG_BOX make_a_text_editor(int y, int x, int width, int height,
+						int attribute, char optionf_flags,
+						char *title, char dialog_flags);
+
+/* The end of definition of high level functions ----------------------------------------------------- */
+/* The end of the Raven Curses. */
 
 
-/* online editor functions */
-void initialize(void)
+/* Functions for The online edito */
+void initialize(void);
+void prosseccing_for_text_editor(int y, int x);
+
+void make_a_menu(int y, int x, int width, int height, char attribute)
+{
+	#if DEBUG == 1
+	attribute = 0xF0 & attribute;
+	#define A "File"
+	#endif
+
+
+	 /* Top menu bar */
+	make_a_filled_box(y, x, width, height, attribute, 0);
+
+
+	/* Menu */
+	put_a_character(0, 1, 0xF0, attribute);
+	put_a_string(0, 4, A, attribute);
+	put_a_string(0, 10, "Load", attribute);
+	put_a_string(0, 16, "Save", attribute);
+	put_a_string(0, 22, "Save as..", attribute);
+	put_a_string(0, 34, "Exit", attribute);
+
+
+}
+/* -------------------------------------------------------------------------------------------------- */
+
+int main()
+{
+	char far *high_level;       // For keyboard proccessing.
+	char far *low_level;
+
+	initialize();               // initiallizing.
+
+	make_a_text_editor(5, 30, 40, 10, TEXT_WHITE | BG_BLUE, 22, " Hell ", 1);
+
+
+	return 0;
+}
+
+/* Functions for The online editor */
+void initialize(void)           // Initializing one line editor
 {
 	int i_count;
 
 	clrscr();
 
 	/* Background */
-	fill_background(0xB0, BG_BLUE);
-
-	/* Top menu bar */
-	make_a_filled_box(0, 0, 79, 0, BG_GRAY, 0);
-
+	fill_background(0xB0, BG_GRAY);
+	make_a_menu(0, 0, 79, 0, BG_GRAY);
 
 	return;
 }
 
-int main()
-{
-	initialize();
 
-	make_a_dialog_box(9, 50, 50, 10, TEXT_WHITE | BG_BROWN, 22, " Hello ", 1);
-	make_a_dialog_box(-3, -3, 40, 8, TEXT_WHITE | BG_BLUE, 22, " Raven ", 1);
-	make_a_dialog_box(10, -3, 40, 8, TEXT_WHITE | BG_BLUE, 22, " Raven ", 1);
 
-	make_a_dialog_box(3, 15, 15, 5, TEXT_WHITE | BG_BLUE, 22, " Chat ", 1);
-	//make_a_dialog_box(4, 25, 30, 8, TEXT_WHITE | BG_RED, 22, "Raven", 1);
-	//put_a_character(3, 3, 'A', TEXT_RED);
-	//put_a_string(4, 3, "Hello World", TEXT_BLUE);
-	//put_a_string(24, 1, "This is the first GUI program for me.", TEXT_YELLOW);
-
-	return 0;
-}
 
 /* #1 Functions for putting a text on screen  */
 void put_a_character(int y, int x, char character, int attribute)
@@ -122,13 +193,14 @@ void make_a_shadow(int y, int x, int width, int height, int attribute)
 		{
 			if((i_count_x == width) || (i_count_y == height))
 			{
-				if((x < 0) || (24 < y + i_count_y) || (79 < x + i_count_x) || (0 > y + i_count_y) || (0 > x + i_count_x))
+				if((24 < y + i_count_y) || (79 < x + i_count_x) || (0 > y + i_count_y) || (0 > x + i_count_x))
 				{
 
 				}
 				else
 				{
-					put_a_character(y + i_count_y + 1, x + i_count_x + 1, ' ', BG_BLACK );
+					//put_a_character(y + i_count_y + 1, x + i_count_x + 1, ' ', BG_BLACK );
+					VGA_inverse_shadow(y + i_count_y + 1, x + i_count_x + 1, 1);
 				}
 			}
 		}
@@ -177,7 +249,7 @@ void draw_a_quadrangle(int y, int x, int width, int height, int attribute, char 
 		put_a_character(y, x, TOP_LEFT_1_LINE, attribute);
 	}
 
-	if((79 > x + i_count_x) || (0 < x + i_count_x))
+	if((79 > (x + width)) || (0 < x + i_count_x))
 	{
 		put_a_character(y, x + width, TOP_RIGHT_1_LINE, attribute);
 	}
@@ -208,7 +280,113 @@ void fill_background(char tile, int attribute)
 	return;
 }
 
+/* #4 Low level functions for system */
+int get_the_center_point(int width_of_base, int length_of_object)
+{
+	return ((width_of_base - length_of_object) / 2);
+}
+
+void VGA_inverse_attrib(unsigned char far *attrib)
+{
+	unsigned char origin_attrib;
+
+	origin_attrib = *attrib;
+	*attrib = *attrib >> 4;
+	*attrib = *attrib & 0x0f;
+	origin_attrib = origin_attrib << 4;
+	*attrib = *attrib | origin_attrib;
+
+	return;
+}
+
+void VGA_inverse_attrib_shadow(unsigned char far *attrib)
+{
+	*attrib = BG_BLACK;
+	*attrib = *attrib | TEXT_GRAY | BG_BLACK;
+
+	return;
+}
+
+void VGA_inverse_bar(int y, int x, int length)
+{
+	int i = 0;
+	unsigned char far *attr_memory = (unsigned char far *)0xb8000001L;
+
+	attr_memory = attr_memory + y * 160 + x * 2;
+
+	for(i = 0; i < length; i++)
+	{
+		VGA_inverse_attrib(attr_memory);
+		attr_memory = attr_memory + 2;
+	}
+}
+
+void VGA_inverse_shadow(int y, int x, int length)
+{
+	int i = 0;
+	unsigned char far *attr_memory = (unsigned char far *)0xb8000001L;
+
+	attr_memory = attr_memory + y * 160 + x * 2;
+
+	for(i = 0; i < length; i++)
+	{
+		VGA_inverse_attrib_shadow(attr_memory);
+		attr_memory = attr_memory + 2;
+	}
+}
+
+void move_cursor(int page, int y, int x)
+{
+	union REGS regs;
+	regs.h.ah = 2;
+	regs.h.dh = y;
+	regs.h.dl = x;
+	regs.h.bh = page;
+	int86(0x10, &regs, &regs);
+
+	return;
+}
+
+void get_keyboard_input(char *high_level, char *low_level)
+{
+	*low_level = getch();
+	*high_level = getch();
+
+	return;
+}
+
+void prosseccing_for_text_editor(int y, int x)
+{
+	char low_level;
+	char high_level;
+
+
+
+	while(1)
+	{
+		get_keyboard_input(&high_level, &low_level);
+		if((97 < low_level) && (123 > low_level))
+		{
+			if(120 == low_level)
+			{
+				break;
+			}
+			#if DEBUG == 1
+			make_a_dialog_box(2, 1, 25, 5, TEXT_WHITE | BG_BLUE, 22, " Watch ", 1);
+			put_a_string(3, 2, "high_level : " , TEXT_WHITE | BG_BLUE);
+			put_a_character(3, 15, low_level, TEXT_WHITE | BG_BLUE);
+			#endif
+
+			put_a_character(y, x, low_level, TEXT_WHITE | BG_BLUE);
+			move_cursor(0, y, ++x);
+			fflush(stdin);
+		}
+	}
+
+	return;
+}
 /* High */
+
 void make_a_dialog_box(int y, int x, int width, int height,
 	int attribute, char option_flags,
 	char *title, char dialog_flags)
@@ -216,14 +394,15 @@ void make_a_dialog_box(int y, int x, int width, int height,
 	int title_center;
 
 	/* Checking the minimum dialog box size */
-	if(26 > width) /* if not, make the size fixed as 26. */
+	if(26 > width) /* if not, make the size fixed at 26. */
 	{
-		width = 26;
+		width = 20;
 	}
 	if(8 > height)
 	{
-		height = 8;
+		height = 5;
 	}
+
 	make_a_filled_box(y, x, width, height, attribute, option_flags);
 	make_a_shadow(y, x, width, height, attribute);
 	draw_a_quadrangle(y, x, width, height, attribute, option_flags);
@@ -231,5 +410,34 @@ void make_a_dialog_box(int y, int x, int width, int height,
 	title_center = get_the_center_point(width, sizeof(title));
 	put_a_string(y, x - 2 + (title_center), title, attribute);
 
+	return;
+}
+
+DIALOG_BOX make_a_text_editor(int y, int x, int width, int height,
+	int attribute, char option_flags,
+	char *title, char dialog_flags)
+{
+	int title_center;
+
+	/* Checking the minimum dialog box size */
+	if(26 > width) /* if not, make the size fixed at 26. */
+	{
+		width = 26;
+	}
+	if(8 > height)
+	{
+		height = 8;
+	}
+
+	make_a_filled_box(y, x, width, height, attribute, option_flags);
+	make_a_shadow(y, x, width, height, attribute);
+	draw_a_quadrangle(y, x, width, height, attribute, option_flags);
+
+	title_center = get_the_center_point(width, sizeof(title));
+	put_a_string(y, x - 2 + (title_center), title, attribute);
+
+	move_cursor(0, y + 1, x + 1);
+
+	prosseccing_for_text_editor(y + 1, x + 1);
 	return;
 }
