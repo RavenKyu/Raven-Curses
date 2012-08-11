@@ -30,6 +30,7 @@ typedef struct a_word
 
 /* #1 Low level functions for putting a text on screen  */
 void put_a_character(int y, int x, char character, int attribute); // 문자 인자로 받아서 화면에 출력한다.
+void put_a_character_as_ascii(int y, int x, char character, int attribute);
 void put_a_string(int y, int x, char *string, int attribute);      // 문자열을 인자로 받아서 출력한다.
 
 /* #2 Low level functions for making a box  */
@@ -69,13 +70,26 @@ DIALOG_BOX make_a_text_editor(int y, int x, int width, int height,
 						int attribute, char optionf_flags,
 						char *title, char dialog_flags);
 
+/* #H3 */
+make_a_main_menu(int y, int x, int width, int height, char attribute, char option_flags)
+{
+	make_a_filled_box(y, x, width, height, attribute, option_flags);
+	draw_a_quadrangle(y, x, width, height, attribute, option_flags);
+}
+
+void calling_main_menu_bar()
+{
+	gettext();
+	make_a_main_menu(1, 2, 10, 10, TEXT_BLACK | BG_GRAY, 22);
+	puttext();
+}
 /* The end of definition of high level functions ----------------------------------------------------- */
 /* The end of the Raven Curses. */
 
 
 /* Functions for The online edito */
 void initialize(void);
-void prosseccing_for_text_editor(int y, int x);
+void prosseccing_for_text_editor(int y, int x, int width, int height, char attribute);
 
 void make_a_menu(int y, int x, int width, int height, char attribute)
 {
@@ -108,8 +122,7 @@ int main()
 
 	initialize();               // initiallizing.
 
-	make_a_text_editor(5, 30, 40, 10, TEXT_WHITE | BG_BLUE, 22, " Hell ", 1);
-
+	make_a_text_editor(1, 1, 70, 15, TEXT_WHITE | BG_BLUE, 22, " Hell ", 1);
 
 	return 0;
 }
@@ -139,6 +152,21 @@ void put_a_character(int y, int x, char character, int attribute)
 	location = (unsigned char far *)0xb8000000 + y * 160 + x * 2;
 
 	*location++ = character;
+	*location = attribute;
+
+	return;
+}
+
+void put_a_character_as_ascii(int y, int x, char character, int attribute)
+{
+	unsigned char far *location;	/* Point where you put a word */
+	int number = 0;
+
+	location = (unsigned char far *)0xb8000000 + y * 160 + x * 2;
+
+	number = '0' + character;
+
+	*location++ = number;
 	*location = attribute;
 
 	return;
@@ -350,36 +378,127 @@ void move_cursor(int page, int y, int x)
 void get_keyboard_input(char *high_level, char *low_level)
 {
 	*low_level = getch();
-	*high_level = getch();
-
+	if(*low_level == 0)
+	{
+		*high_level = getch();
+	}
+	else
+	{
+		*high_level = 0;
+	}
 	return;
 }
 
-void prosseccing_for_text_editor(int y, int x)
+void prosseccing_for_text_editor(int y, int x, int width, int height, char attribute)
 {
 	char low_level;
 	char high_level;
 
-
+	int i_cursor_y = y;
+	int i_cursor_x = x;
 
 	while(1)
 	{
-		get_keyboard_input(&high_level, &low_level);
-		if((97 < low_level) && (123 > low_level))
+	   get_keyboard_input(&high_level, &low_level);
+	   if(high_level != 0)
+	   {
+			if(45 == high_level)	// Alt + X, Exit.
+			{
+				clrscr();
+				break;
+			}
+
+			if(75 == high_level)	/* Left arrow key */
+			{
+				if(i_cursor_x == x + 1)
+				{
+					i_cursor_y = i_cursor_y - 1;
+					i_cursor_x = x + width - 1;
+					move_cursor(0, i_cursor_y, i_cursor_x);
+				}
+				i_cursor_x = i_cursor_x - 1;
+				move_cursor(0, i_cursor_y, i_cursor_x);
+			}
+			if(77 == high_level)	/* Right arrow key */
+			{
+				if(i_cursor_x == (x + width) - 2)
+				{
+					i_cursor_y = i_cursor_y + 1;
+					i_cursor_x = x;
+					move_cursor(0, i_cursor_y, i_cursor_x);
+				}
+				i_cursor_x = i_cursor_x + 1;
+				move_cursor(0, i_cursor_y, i_cursor_x);
+			}
+			if(72 == high_level)	/* Up arrow key */
+			{
+				if(i_cursor_y == y)
+				{
+					/* Doing Nothing */
+				}
+				else
+				{
+					i_cursor_y = i_cursor_y - 1;
+					move_cursor(0, i_cursor_y, i_cursor_x);
+				}
+			}
+			if(80 == high_level)	/* Down arrow key */
+			{
+				if(i_cursor_y == y + height - 2)
+				{
+					/* Doing Nothing */
+				}
+				else
+				{
+					i_cursor_y = i_cursor_y + 1;
+					move_cursor(0, i_cursor_y, i_cursor_x);
+				}
+			}
+			if(13 == high_level)
+			{
+				if(i_cursor_y == y + height - 2)
+				{
+					/* Doing Nothing */
+				}
+				else
+				{
+					i_cursor_y = i_cursor_y + 1;
+					i_cursor_x = x + 1;
+					move_cursor(0, i_cursor_y, i_cursor_x);
+				}
+			}
+			if(68 == high_level)
+			{
+				calling_main_menu_bar();
+			}
+	   }
+	   else
+	   {
+		if((97 < low_level) && (123 > low_level) || (65 < low_level) && (90 > low_level))
 		{
-			if(120 == low_level)
+			if('x' == low_level)
 			{
 				break;
 			}
-			#if DEBUG == 1
+
+			#if DEBUG == 0	//	Watch
 			make_a_dialog_box(2, 1, 25, 5, TEXT_WHITE | BG_BLUE, 22, " Watch ", 1);
 			put_a_string(3, 2, "high_level : " , TEXT_WHITE | BG_BLUE);
-			put_a_character(3, 15, low_level, TEXT_WHITE | BG_BLUE);
+			put_a_character_as_ascii(3, 15, low_level, TEXT_RED | BG_BLUE);
 			#endif
 
-			put_a_character(y, x, low_level, TEXT_WHITE | BG_BLUE);
-			move_cursor(0, y, ++x);
+
+			put_a_character(i_cursor_y, i_cursor_x, low_level, TEXT_WHITE | BG_BLUE); /* put a text on the current window */
+			if(i_cursor_x > (x + width - 3))
+			{
+				++i_cursor_y;
+				i_cursor_x = x - 1;
+				move_cursor(0, i_cursor_y, i_cursor_x);
+			}
+			move_cursor(0, i_cursor_y, ++i_cursor_x);
 			fflush(stdin);
+
+		}
 		}
 	}
 
@@ -438,6 +557,6 @@ DIALOG_BOX make_a_text_editor(int y, int x, int width, int height,
 
 	move_cursor(0, y + 1, x + 1);
 
-	prosseccing_for_text_editor(y + 1, x + 1);
+	prosseccing_for_text_editor(y + 1, x + 1, width, height, attribute);
 	return;
 }
