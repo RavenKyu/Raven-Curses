@@ -12,7 +12,12 @@ void proc_for_text_editor(int y, int x, int width, int height, char attribute)
     int i_cursor_y = y;
     int i_cursor_x = x;
 
-    LINE_TAG line_list;
+    static int cursor_y = 0;
+    static int cursor_x = 0;
+    
+    LINE_TAG *line_list = NULL;
+    CHAR_TAG *char_list = NULL;
+
     
     while(1)
     {
@@ -24,9 +29,19 @@ void proc_for_text_editor(int y, int x, int width, int height, char attribute)
         }
         else if(low_level != 0)                    // 특수키 입력을 받지 않았을 경우
         {
-            key_proc_text_editor_low_level(y, x, width, height, &i_cursor_y, &i_cursor_x, low_level, &line_list);
+            key_proc_text_editor_low_level(y, x, width, height,
+                                           &i_cursor_y, &i_cursor_x, &cursor_y, &cursor_x,
+                                           low_level, line_list, char_list);
         }
-    }
 
+        //테스트용 출력
+        move_cursor(0, i_cursor_y, i_cursor_x+1);
+        put_a_character(i_cursor_y, i_cursor_x, line_list -> character_point -> character, TEXT_WHITE | BG_BLUE);
+        ++i_cursor_x;
+
+
+
+    }
+    
     return;
 }

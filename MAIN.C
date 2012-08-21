@@ -17,11 +17,10 @@ int main()
     main_window = (WINDOW_TAG *)malloc(sizeof(WINDOW_TAG));
     if(main_window == NULL)
     {
-        make_a_dialog_box(8, 20, 40, 3, TEXT_WHITE | BG_RED, 22, " FATAL ERROR ", 1);
-        put_a_string(10, 21, "Not enough memory to run this program.", TEXT_WHITE | BG_RED);
+        //fatal_error_memory();
     }
 
-    //make_a_dialog_box(10, 15, 40, 13, TEXT_WHITE | BG_SKY, 22, " Raven ", 2);
+    make_a_dialog_box(10, 13, 40, 13, TEXT_WHITE | BG_SKY, 22, " Raven ", 2);
     make_a_text_editor(3, 4, 15, 5, TEXT_WHITE | BG_BLUE, 22, " Hello ", 1);
 
     free(main_window);
