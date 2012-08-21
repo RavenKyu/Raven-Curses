@@ -1,0 +1,40 @@
+#ifndef __ATTRIB_H__
+#define __ATTRIB_H__
+
+#define TEXT_BLACK	0X00 << 0
+#define TEXT_BLUE	0X01 << 0
+#define TEXT_GREEN	0x02 << 0
+#define TEXT_SKY	0x03 << 0
+#define TEXT_RED	0x04 << 0
+#define TEXT_PURPLE	0x05 << 0
+#define TEXT_BROWN	0x06 << 0
+#define TEXT_GRAY	0x07 << 0
+#define	TEXT_bBLACK	0x08 << 0
+#define TEXT_bBLUE	0x09 << 0
+#define TEXT_bGREEN	0x0A << 0
+#define TEXT_bSKY	0x0B << 0
+#define TEXT_bRED	0x0C << 0
+#define TEXT_bPURPLE	0x0D << 0
+#define	TEXT_YELLOW	0x0E << 0
+#define TEXT_WHITE	0x0F << 0
+
+#define BG_BLACK	0x00 << 4
+#define BG_BLUE		0x01 << 4
+#define BG_GREEN	0x02 << 4
+#define BG_SKY		0x03 << 4
+#define BG_RED		0x04 << 4
+#define BG_PURPLE	0x05 << 4
+#define BG_BROWN	0x06 << 4
+#define BG_GRAY		0x07 << 4
+#define BG_bBLACK	0x08 << 4
+#define BG_bBLUE	0x09 << 4
+#define BG_bGREEN	0x0A << 4
+#define BG_bSKY		0x0B << 4
+#define BG_bRED		0x0C << 4
+#define BG_bPURPLE	0x0D << 4
+#define BG_YELLOW	0x0E << 4
+#define BG_WHITE	0x0F << 4
+
+#define TEXT_BLINK	0x01 << 7
+
+#endif  //      __ATTRIB_H__

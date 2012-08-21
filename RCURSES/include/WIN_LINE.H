@@ -1,0 +1,9 @@
+#define TOP_LEFT_1_LINE		0xDA
+#define TOP_RIGHT_1_LINE	0xBF
+#define BOTTOM_LEFT_1_LINE	0XC0
+#define BOTTOM_RIGHT_1_LINE	0xD9
+#define VERTICAL_1_LINE		0xB3
+#define HORIZON_1_LINE		0xC4
+
+#define TOP_LEFT_2_LINE		0xC9
+#define TOP_RIGHT_2_LINE    0xBB
